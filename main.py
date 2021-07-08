@@ -18,8 +18,8 @@ class DiscordBot(discord.Client):
 
     async def handle_subnight(self, message):
         if message.content == f"{command_prefix}subnight" or message.content == f"{command_prefix}subnight get":
-            name = self.subnight.data['name']
-            url = self.subnight.data['url']
+            name = self.subnight.data["name"]
+            url = self.subnight.data["url"]
             if len(name) > 0:
                 await message.channel.send(f"Subnight is {name}."+"\n"+f"URL: {url}")
             else:

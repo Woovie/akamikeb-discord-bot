@@ -18,5 +18,6 @@ class Subnight():
                 self.data = json.loads(openfile.read())
         else:
             with open(self.subnight_file, 'w') as openfile:
-                openfile.write(json.dumps({}))
-                self.data = {}
+                seed_data = {"name": "", "url": ""}
+                openfile.write(json.dumps(seed_data))
+                self.data = seed_data
