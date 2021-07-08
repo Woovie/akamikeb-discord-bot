@@ -1,2 +1,4 @@
 config.ini
 venv
+__pycache__
+game.json
