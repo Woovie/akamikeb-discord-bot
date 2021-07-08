@@ -1,23 +1,22 @@
 import os.path
+import json
 
 class Subnight():
     def __init__(self):
-        self.subnight_file = "game.txt"
+        self.subnight_file = "game.json"
+        self.data = {}
+        self.get()
 
-    def set(self, game: str) -> bool:
+    def set(self, game: dict):
         with open(self.subnight_file, 'w') as openfile:
-            openfile.write(game)
-        with open(self.subnight_file, 'r') as openfile:
-            if openfile.read() == game:
-                return True
-            else:
-                return False
+            openfile.write(json.dumps(game))
+            self.data = game
 
-    def get(self) -> str:
+    def get(self):
         if os.path.exists(self.subnight_file):
             with open(self.subnight_file, 'r') as openfile:
-                return openfile.read()
+                self.data = json.loads(openfile.read())
         else:
             with open(self.subnight_file, 'w') as openfile:
-                openfile.write("")
-                return ""
+                openfile.write(json.dumps({}))
+                self.data = {}
