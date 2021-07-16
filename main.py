@@ -19,44 +19,51 @@ class DiscordBot(discord.Client):
 
     async def handle_subnight(self, message):
         match message.content.split():
-            # !subnight
             case [command]:
                 match command:
                     case "!subnight":
-                        sendable = ""
-                        name = self.subnight.data["name"]
-                        url = self.subnight.data["url"]
+                        result = await self.get_subnight()
+                        await message.channel.send(result)
 
-                        if len(name) > 0:
-                            sendable += f"Subnight is {name}"
-                        else:
-                            sendable = "No game set <:45:774771310437072954> I guess you're forever alone <:bobK:857020248254578738>"
-                        
-                        if len(url) > 0:
-                            sendable += f"\n{url}"
-                        
-                        await message.channel.send(sendable)
-            # !subnight set <stuff>
             case [command, action, *parameters]:
                 match command:
                     case "!subnight":
                         match action:
                             case "set":
                                 if message.author.guild_permissions.administrator:
-                                    final_payload = {
-                                        "name": "",
-                                        "url": ""
-                                    }
-                                    
-                                    for partial in parameters:
-                                        if partial.startswith("http"):
-                                            final_payload["url"] = partial
-                                            parameters.remove(partial)
-                                    
-                                    final_payload["name"] = " ".join(parameters)
-
-                                    self.subnight.set(final_payload)
+                                    result = await self.create_subnight_payload(parameters)
+                                    self.subnight.set(result)
                                     await self.set_status()
+
+    async def get_subnight(self):
+        sendable = ""
+        name = self.subnight.data["name"]
+        url = self.subnight.data["url"]
+
+        if len(name) > 0:
+            sendable += f"Subnight is {name}"
+        else:
+            sendable = "No game set <:45:774771310437072954> I guess you're forever alone <:bobK:857020248254578738>"
+        
+        if len(url) > 0:
+            sendable += f"\n{url}"
+        
+        return sendable
+
+    async def create_subnight_payload(self, parameters):
+        final_payload = {
+            "name": "",
+            "url": ""
+        }
+        
+        for partial in parameters:
+            if partial.startswith("http"):
+                final_payload["url"] = partial
+                parameters.remove(partial)
+        
+        final_payload["name"] = " ".join(parameters)
+
+        return final_payload
 
     async def set_status(self):
         if len(self.subnight.data["name"]) > 0:
