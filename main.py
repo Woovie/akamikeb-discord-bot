@@ -1,4 +1,3 @@
-from typing import final
 import discord, configparser, subnight
 
 config = configparser.ConfigParser()
