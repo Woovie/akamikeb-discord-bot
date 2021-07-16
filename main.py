@@ -1,3 +1,4 @@
+from typing import final
 import discord, configparser, subnight
 
 config = configparser.ConfigParser()
@@ -17,39 +18,51 @@ class DiscordBot(discord.Client):
                 await self.handle_subnight(message)
 
     async def handle_subnight(self, message):
-        if message.content == f"{command_prefix}subnight" or message.content == f"{command_prefix}subnight get":
-            name = self.subnight.data["name"]
-            url = self.subnight.data["url"]
-            if len(name) > 0:
-                await message.channel.send(f"Subnight is {name}."+"\n"+f"URL: {url}")
-            else:
-                await message.channel.send("No game set <:45:774771310437072954> I guess you're forever alone <:bobK:857020248254578738>")
-        elif message.content.startswith(f"{command_prefix}subnight set"):
-            if message.author.guild_permissions.administrator:
-                msgsplit = message.content.split(' ')
-                if len(msgsplit) > 2:
-                    for line in msgsplit:
-                        if line.startswith("http"):
-                            game_url = line
-                            msgsplit.remove(line)
-                    game_name = " ".join(msgsplit[2:])
-                    result = self.subnight.set({
-                      "name": game_name,
-                      "url": game_url
-                    })
-                    await self.set_status()
-                else:
-                    self.subnight.set({
-                        "name": "",
-                        "url": ""
-                    })
-                    await self.set_status()
+        match message.content.split():
+            # !subnight
+            case [command]:
+                match command:
+                    case "!subnight":
+                        sendable = ""
+                        name = self.subnight.data["name"]
+                        url = self.subnight.data["url"]
+
+                        if len(name) > 0:
+                            sendable += f"Subnight is {name}"
+                        else:
+                            sendable = "No game set <:45:774771310437072954> I guess you're forever alone <:bobK:857020248254578738>"
+                        
+                        if len(url) > 0:
+                            sendable += f"\n{url}"
+                        
+                        await message.channel.send(sendable)
+            # !subnight set <stuff>
+            case [command, action, *parameters]:
+                match command:
+                    case "!subnight":
+                        match action:
+                            case "set":
+                                if message.author.guild_permissions.administrator:
+                                    final_payload = {
+                                        "name": "",
+                                        "url": ""
+                                    }
+                                    
+                                    for partial in parameters:
+                                        if partial.startswith("http"):
+                                            final_payload["url"] = partial
+                                            parameters.remove(partial)
+                                    
+                                    final_payload["name"] = " ".join(parameters)
+
+                                    self.subnight.set(final_payload)
+                                    await self.set_status()
 
     async def set_status(self):
         if len(self.subnight.data["name"]) > 0:
             status_obj = discord.Game(self.subnight.data["name"])
         else:
-            status_obj = discord.Game(config['discord']['status_placeholder'])
+            status_obj = discord.Game(config["discord"]["status_placeholder"])
         await client.change_presence(activity=status_obj)
 
 client = DiscordBot()
