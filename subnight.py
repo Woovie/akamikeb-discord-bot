@@ -21,3 +21,18 @@ class Subnight():
                 seed_data = {"name": "", "url": ""}
                 openfile.write(json.dumps(seed_data))
                 self.data = seed_data
+
+def create_subnight_payload(parameters):
+    final_payload = {
+        "name": "",
+        "url": ""
+    }
+    
+    for partial in parameters:
+        if partial.startswith("http"):
+            final_payload["url"] = partial
+            parameters.remove(partial)
+    
+    final_payload["name"] = " ".join(parameters)
+
+    return final_payload
